@@ -7,6 +7,7 @@ import 'providers/navigation_provider.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/explore_hub_screen.dart';
 import 'screens/genre_page.dart';
+import 'screens/sub_genre_screen.dart';
 import 'screens/discussion_thread_screen.dart';
 
 void main() {
@@ -100,10 +101,11 @@ class AppShell extends StatelessWidget {
         return const ExploreHubScreen(key: ValueKey('explore-fallback'));
 
       case AppScreen.subGenre:
-        if (nav.selectedGenre != null) {
-          return GenrePage(
-            key: ValueKey('subgenre-${nav.selectedSubGenre?.id}'),
+        if (nav.selectedGenre != null && nav.selectedSubGenre != null) {
+          return SubGenreScreen(
+            key: ValueKey('subgenre-${nav.selectedSubGenre!.id}'),
             genre: nav.selectedGenre!,
+            subGenre: nav.selectedSubGenre!,
           );
         }
         return const ExploreHubScreen(key: ValueKey('explore-fallback2'));

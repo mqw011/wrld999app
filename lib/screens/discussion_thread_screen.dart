@@ -25,7 +25,17 @@ class DiscussionThreadScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final tm = context.watch<ThemeManager>();
     final nav = context.read<NavigationProvider>();
-    final posts = Post.sampleRagePosts;
+    final activeSubGenre =
+        subGenre ?? (genre.subGenres.isNotEmpty ? genre.subGenres.first : null);
+    final posts = activeSubGenre == null
+        ? const <Post>[]
+        : Post.postsForThread(
+            genreId: genre.id,
+            subGenreId: activeSubGenre.id,
+          );
+    final threadTitle = activeSubGenre != null
+        ? '🔥 ${activeSubGenre.name} Thread'
+        : '🔥 ${genre.name} Discussion';
 
     return Scaffold(
       backgroundColor: tm.scaffoldBg,
@@ -39,7 +49,7 @@ class DiscussionThreadScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '🔥 Rage Thread',
+              threadTitle,
               style: GoogleFonts.inter(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -72,7 +82,7 @@ class DiscussionThreadScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
             child: BreadcrumbBar.fromGenre(
               genre: genre,
-              subGenreName: subGenre?.name ?? 'Rage',
+              subGenreName: activeSubGenre?.name,
               accentColor: genre.primaryAccent,
               onHomeTap: () {
                 tm.setActiveGenre(null);
@@ -89,20 +99,86 @@ class DiscussionThreadScreen extends StatelessWidget {
 
           // ── Posts list ───────────────────────────────────
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-              itemCount: posts.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) => _PostBubble(
-                post: posts[index],
-                accentColor: genre.primaryAccent,
-              ),
-            ),
+            child: posts.isEmpty
+                ? _EmptyThreadState(
+                    genre: genre,
+                    subGenre: activeSubGenre,
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                    itemCount: posts.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) => _PostBubble(
+                      post: posts[index],
+                      accentColor: genre.primaryAccent,
+                    ),
+                  ),
           ),
 
           // ── Compose bar ──────────────────────────────────
           _ComposeBar(accentColor: genre.primaryAccent),
         ],
+      ),
+    );
+  }
+}
+
+class _EmptyThreadState extends StatelessWidget {
+  final Genre genre;
+  final SubGenre? subGenre;
+
+  const _EmptyThreadState({
+    required this.genre,
+    required this.subGenre,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: const Color(0xFF1A1A1A),
+            border: Border.all(
+              color: genre.primaryAccent.withValues(alpha: 0.12),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.forum_outlined,
+                size: 40,
+                color: genre.primaryAccent,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'No posts yet',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                subGenre == null
+                    ? 'Open a seeded thread or start the first conversation in this genre.'
+                    : '${subGenre!.name} is ready for the first post. The seeded Rage thread now uses the correct thread key.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: Colors.white54,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

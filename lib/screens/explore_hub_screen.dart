@@ -8,13 +8,45 @@ import '../providers/theme_manager.dart';
 
 /// Stitch ID: 230ba0db19084b93a09a9be3d57e931a
 /// Main Explore Hub — grid/list of genre hubs.
-class ExploreHubScreen extends StatelessWidget {
+class ExploreHubScreen extends StatefulWidget {
   const ExploreHubScreen({super.key});
+
+  @override
+  State<ExploreHubScreen> createState() => _ExploreHubScreenState();
+}
+
+class _ExploreHubScreenState extends State<ExploreHubScreen> {
+  late final TextEditingController _searchController;
+  late final FocusNode _searchFocusNode;
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+    _searchFocusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final tm = context.watch<ThemeManager>();
     final genres = Genre.allGenres;
+    final normalizedQuery = _searchQuery.trim().toLowerCase();
+    final filteredGenres = normalizedQuery.isEmpty
+        ? genres
+        : genres
+            .where(
+              (genre) => genre.name.toLowerCase().contains(normalizedQuery),
+            )
+            .toList();
+    final isSearching = normalizedQuery.isNotEmpty;
 
     return Scaffold(
       backgroundColor: tm.scaffoldBg,
@@ -66,7 +98,7 @@ class ExploreHubScreen extends StatelessWidget {
             ),
             actions: [
               IconButton(
-                onPressed: () {},
+                onPressed: () => _searchFocusNode.requestFocus(),
                 icon: const Icon(Icons.search, color: Colors.white70),
               ),
               IconButton(
@@ -80,63 +112,179 @@ class ExploreHubScreen extends StatelessWidget {
           // ── Section header ─────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-              child: Text(
-                'Explore Genres',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isSearching ? 'Search Results' : 'Explore Genres',
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF171717),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                      ),
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      focusNode: _searchFocusNode,
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Search genre by name…',
+                        hintStyle: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: Colors.white38,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: Colors.white54,
+                        ),
+                        suffixIcon: isSearching
+                            ? IconButton(
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {
+                                    _searchQuery = '';
+                                  });
+                                },
+                                icon: const Icon(
+                                  Icons.close,
+                                  color: Colors.white54,
+                                ),
+                              )
+                            : null,
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (isSearching) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      '${filteredGenres.length} result${filteredGenres.length == 1 ? '' : 's'} for "${_searchQuery.trim()}"',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: Colors.white54,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ),
+
+          if (filteredGenres.isEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: const Color(0xFF171717),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.search_off,
+                        color: Colors.white54,
+                        size: 36,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No matching genres',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Try a different name like Hip-Hop, Jazz, or Rock.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: Colors.white54,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
 
           // ── Genre grid ─────────────────────────────────────
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 0.85,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => _GenreCard(genre: genres[index]),
-                childCount: genres.length,
-              ),
-            ),
-          ),
-
-          // ── Trending section ───────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 32, 20, 12),
-              child: Text(
-                'Trending Now',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+          if (filteredGenres.isNotEmpty)
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.85,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => _GenreCard(genre: filteredGenres[index]),
+                  childCount: filteredGenres.length,
                 ),
               ),
             ),
-          ),
 
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 140,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: genres.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 12),
-                itemBuilder: (context, index) =>
-                    _TrendingCard(genre: genres[index]),
+          // ── Trending section ───────────────────────────────
+          if (!isSearching) ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 32, 20, 12),
+                child: Text(
+                  'Trending Now',
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
-          ),
+
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 140,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: genres.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) =>
+                      _TrendingCard(genre: genres[index]),
+                ),
+              ),
+            ),
+          ],
 
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],

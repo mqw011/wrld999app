@@ -21,6 +21,30 @@ class Post {
     this.mediaType,
   });
 
+  static const String rageThreadSeedKey =
+      '7b3f3fcfe1124ba69c0708d4343f42ea:hh-rage';
+
+  static String buildThreadKey({
+    required String genreId,
+    required String subGenreId,
+  }) {
+    return '$genreId:$subGenreId';
+  }
+
+  static List<Post> postsForThread({
+    required String genreId,
+    required String subGenreId,
+  }) {
+    final threadKey = buildThreadKey(
+      genreId: genreId,
+      subGenreId: subGenreId,
+    );
+
+    return List<Post>.unmodifiable(
+      _seededThreadPosts[threadKey] ?? const <Post>[],
+    );
+  }
+
   /// Sample discussion posts for the Rage Thread.
   static List<Post> get sampleRagePosts => [
         Post(
@@ -79,6 +103,10 @@ class Post {
           replies: 143,
         ),
       ];
+
+  static Map<String, List<Post>> get _seededThreadPosts => {
+        rageThreadSeedKey: sampleRagePosts,
+      };
 }
 
 enum PostMediaType { audio, image, video }

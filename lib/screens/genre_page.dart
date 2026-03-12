@@ -26,6 +26,8 @@ class GenrePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final tm = context.watch<ThemeManager>();
     final nav = context.read<NavigationProvider>();
+    final featuredSubGenre =
+        genre.subGenres.isNotEmpty ? genre.subGenres.first : null;
 
     return Scaffold(
       backgroundColor: tm.scaffoldBg,
@@ -172,16 +174,19 @@ class GenrePage extends StatelessWidget {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 _DiscussionPreviewCard(
-                  title: '🔥 Rage Thread',
-                  subtitle:
-                      'High-energy discussion — 143 replies',
+                  title: featuredSubGenre == null
+                      ? '🔥 Community Thread'
+                      : '🔥 ${featuredSubGenre.name} Thread',
+                  subtitle: featuredSubGenre == null
+                      ? 'Open the first live conversation for this genre.'
+                      : '${featuredSubGenre.description} — live now',
                   accentColor: genre.primaryAccent,
-                  onTap: () {
-                    if (genre.subGenres.isNotEmpty) {
-                      nav.navigateToSubGenre(genre.subGenres.first);
-                    }
-                    nav.navigateToDiscussion();
-                  },
+                  onTap: featuredSubGenre == null
+                      ? () {}
+                      : () {
+                          nav.navigateToSubGenre(featuredSubGenre);
+                          nav.navigateToDiscussion();
+                        },
                 ),
                 const SizedBox(height: 10),
                 _DiscussionPreviewCard(
