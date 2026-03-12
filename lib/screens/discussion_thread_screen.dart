@@ -23,12 +23,13 @@ class DiscussionThreadScreen extends StatelessWidget {
     final tm = context.watch<ThemeManager>();
     final nav = context.read<NavigationProvider>();
     final postProvider = context.watch<PostProvider>();
+    final sortOption = postProvider.threadSort;
     final activeSubGenre =
         subGenre ?? (genre.subGenres.isNotEmpty ? genre.subGenres.first : null);
     final activeSubGenreId = activeSubGenre?.id;
     final posts = activeSubGenre == null
         ? const <Post>[]
-        : postProvider.postsForThread(
+        : postProvider.sortedPosts(
             genreId: genre.id,
             subGenreId: activeSubGenreId!,
           );
@@ -63,10 +64,6 @@ class DiscussionThreadScreen extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.sort, color: genre.primaryAccent),
-          ),
-          IconButton(
-            onPressed: () {},
             icon: const Icon(Icons.more_vert, color: Colors.white54),
           ),
         ],
@@ -84,11 +81,34 @@ class DiscussionThreadScreen extends StatelessWidget {
                 tm.setActiveGenre(null);
                 nav.navigateToExplore();
               },
-              onGenreTap: () => nav.goBack(),
+              onGenreTap: () => nav.popToScreen(AppScreen.genre),
             ),
           ),
 
           Divider(color: Colors.white.withValues(alpha: 0.06), height: 1),
+
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Row(
+              children: [
+                _SortChip(
+                  label: 'Новые',
+                  isSelected: sortOption == ThreadSortOption.newest,
+                  accentColor: genre.primaryAccent,
+                  onTap: () =>
+                      postProvider.setThreadSort(ThreadSortOption.newest),
+                ),
+                const SizedBox(width: 10),
+                _SortChip(
+                  label: 'Популярные',
+                  isSelected: sortOption == ThreadSortOption.popular,
+                  accentColor: genre.primaryAccent,
+                  onTap: () =>
+                      postProvider.setThreadSort(ThreadSortOption.popular),
+                ),
+              ],
+            ),
+          ),
 
           // ── Posts list ───────────────────────────────────
           Expanded(
@@ -485,6 +505,55 @@ class _ActionChip extends StatelessWidget {
                 : Colors.transparent,
           ),
           child: chip,
+        ),
+      ),
+    );
+  }
+}
+
+class _SortChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final Color accentColor;
+  final VoidCallback onTap;
+
+  const _SortChip({
+    required this.label,
+    required this.isSelected,
+    required this.accentColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final foregroundColor = isSelected ? accentColor : Colors.white60;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: isSelected
+                ? accentColor.withValues(alpha: 0.14)
+                : Colors.white.withValues(alpha: 0.04),
+            border: Border.all(
+              color: isSelected
+                  ? accentColor.withValues(alpha: 0.5)
+                  : Colors.white.withValues(alpha: 0.08),
+            ),
+          ),
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: foregroundColor,
+            ),
+          ),
         ),
       ),
     );

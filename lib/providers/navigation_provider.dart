@@ -1,76 +1,105 @@
 import 'package:flutter/material.dart';
 import '../models/genre.dart';
 
-/// Manages the hierarchical navigation state:
+/// Manages hierarchical navigation with a simple stack:
 /// Explore → Genre → Sub-genre → Discussion
 enum AppScreen { onboarding, explore, genre, subGenre, discussion }
 
 class NavigationProvider extends ChangeNotifier {
-  AppScreen _currentScreen = AppScreen.onboarding;
-  Genre? _selectedGenre;
-  SubGenre? _selectedSubGenre;
+  List<Map<String, Object?>> _stack = [_route(screen: AppScreen.onboarding)];
   bool _onboardingComplete = false;
 
+  static Map<String, Object?> _route({
+    required AppScreen screen,
+    Genre? genre,
+    SubGenre? subGenre,
+  }) {
+    return {'screen': screen, 'genre': genre, 'subGenre': subGenre};
+  }
+
+  Map<String, Object?> get _currentEntry => _stack.last;
+  AppScreen get _rootScreen =>
+      _onboardingComplete ? AppScreen.explore : AppScreen.onboarding;
+
   // ── Getters ──────────────────────────────────────────────
-  AppScreen get currentScreen => _currentScreen;
-  Genre? get selectedGenre => _selectedGenre;
-  SubGenre? get selectedSubGenre => _selectedSubGenre;
+  AppScreen get currentScreen => _currentEntry['screen'] as AppScreen;
+  Genre? get selectedGenre => _currentEntry['genre'] as Genre?;
+  SubGenre? get selectedSubGenre => _currentEntry['subGenre'] as SubGenre?;
   bool get onboardingComplete => _onboardingComplete;
+  List<AppScreen> get stack =>
+      List.unmodifiable(_stack.map((entry) => entry['screen'] as AppScreen));
 
   // ── Navigation actions ───────────────────────────────────
   void completeOnboarding() {
     _onboardingComplete = true;
-    _currentScreen = AppScreen.explore;
+    _stack = [_route(screen: AppScreen.explore)];
     notifyListeners();
   }
 
   void navigateToExplore() {
-    _currentScreen = AppScreen.explore;
-    _selectedGenre = null;
-    _selectedSubGenre = null;
+    _stack = [_route(screen: _rootScreen)];
     notifyListeners();
   }
 
   void navigateToGenre(Genre genre) {
-    _currentScreen = AppScreen.genre;
-    _selectedGenre = genre;
-    _selectedSubGenre = null;
+    _stack = [
+      _route(screen: _rootScreen),
+      _route(screen: AppScreen.genre, genre: genre),
+    ];
     notifyListeners();
   }
 
   void navigateToSubGenre(SubGenre subGenre) {
-    _currentScreen = AppScreen.subGenre;
-    _selectedSubGenre = subGenre;
+    final genre = selectedGenre;
+    if (genre == null) {
+      return;
+    }
+
+    _stack = [
+      ..._stack,
+      _route(screen: AppScreen.subGenre, genre: genre, subGenre: subGenre),
+    ];
     notifyListeners();
   }
 
   void navigateToDiscussion() {
-    _currentScreen = AppScreen.discussion;
+    final genre = selectedGenre;
+    if (genre == null || currentScreen == AppScreen.discussion) {
+      return;
+    }
+
+    _stack = [
+      ..._stack,
+      _route(
+        screen: AppScreen.discussion,
+        genre: genre,
+        subGenre: selectedSubGenre,
+      ),
+    ];
     notifyListeners();
   }
 
   void goBack() {
-    switch (_currentScreen) {
-      case AppScreen.discussion:
-        _currentScreen = AppScreen.subGenre;
-        break;
-      case AppScreen.subGenre:
-        _currentScreen = AppScreen.genre;
-        _selectedSubGenre = null;
-        break;
-      case AppScreen.genre:
-        _currentScreen = AppScreen.explore;
-        _selectedGenre = null;
-        break;
-      case AppScreen.explore:
-      case AppScreen.onboarding:
-        break;
+    if (!canGoBack) {
+      return;
     }
+
+    _stack = _stack.sublist(0, _stack.length - 1);
+    notifyListeners();
+  }
+
+  void popToScreen(AppScreen screen) {
+    if (!_stack.any((entry) => entry['screen'] == screen)) {
+      return;
+    }
+
+    while (_stack.length > 1 && currentScreen != screen) {
+      _stack = _stack.sublist(0, _stack.length - 1);
+    }
+
     notifyListeners();
   }
 
   /// Whether a back action is available.
-  bool get canGoBack =>
-      _currentScreen != AppScreen.explore &&
-      _currentScreen != AppScreen.onboarding;
+  bool get canGoBack => _stack.length > 1;
 }

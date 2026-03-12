@@ -115,7 +115,9 @@ class AppShell extends StatelessWidget {
       case AppScreen.discussion:
         if (nav.selectedGenre != null) {
           return DiscussionThreadScreen(
-            key: const ValueKey('discussion'),
+            key: ValueKey(
+              'discussion-${nav.selectedGenre!.id}-${nav.selectedSubGenre?.id ?? 'root'}',
+            ),
             genre: nav.selectedGenre!,
             subGenre: nav.selectedSubGenre,
           );
