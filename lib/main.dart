@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import 'providers/post_provider.dart';
 import 'providers/theme_manager.dart';
 import 'providers/navigation_provider.dart';
 import 'screens/onboarding_screen.dart';
@@ -32,6 +33,7 @@ class NineNineNineApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeManager()),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
+        ChangeNotifierProvider(create: (_) => PostProvider()),
       ],
       child: Consumer<ThemeManager>(
         builder: (context, themeManager, _) {
@@ -122,5 +124,3 @@ class AppShell extends StatelessWidget {
     }
   }
 }
-
-

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../models/genre.dart';
 import '../models/post.dart';
 import '../providers/navigation_provider.dart';
+import '../providers/post_provider.dart';
 import '../providers/theme_manager.dart';
 import '../widgets/breadcrumb_widget.dart';
 
@@ -15,23 +16,21 @@ class DiscussionThreadScreen extends StatelessWidget {
   final Genre genre;
   final SubGenre? subGenre;
 
-  const DiscussionThreadScreen({
-    super.key,
-    required this.genre,
-    this.subGenre,
-  });
+  const DiscussionThreadScreen({super.key, required this.genre, this.subGenre});
 
   @override
   Widget build(BuildContext context) {
     final tm = context.watch<ThemeManager>();
     final nav = context.read<NavigationProvider>();
+    final postProvider = context.watch<PostProvider>();
     final activeSubGenre =
         subGenre ?? (genre.subGenres.isNotEmpty ? genre.subGenres.first : null);
+    final activeSubGenreId = activeSubGenre?.id;
     final posts = activeSubGenre == null
         ? const <Post>[]
-        : Post.postsForThread(
+        : postProvider.postsForThread(
             genreId: genre.id,
-            subGenreId: activeSubGenre.id,
+            subGenreId: activeSubGenreId!,
           );
     final threadTitle = activeSubGenre != null
         ? '🔥 ${activeSubGenre.name} Thread'
@@ -57,10 +56,7 @@ class DiscussionThreadScreen extends StatelessWidget {
             ),
             Text(
               '${posts.length} posts',
-              style: GoogleFonts.inter(
-                fontSize: 11,
-                color: Colors.white54,
-              ),
+              style: GoogleFonts.inter(fontSize: 11, color: Colors.white54),
             ),
           ],
         ),
@@ -92,18 +88,12 @@ class DiscussionThreadScreen extends StatelessWidget {
             ),
           ),
 
-          Divider(
-            color: Colors.white.withValues(alpha: 0.06),
-            height: 1,
-          ),
+          Divider(color: Colors.white.withValues(alpha: 0.06), height: 1),
 
           // ── Posts list ───────────────────────────────────
           Expanded(
             child: posts.isEmpty
-                ? _EmptyThreadState(
-                    genre: genre,
-                    subGenre: activeSubGenre,
-                  )
+                ? _EmptyThreadState(genre: genre, subGenre: activeSubGenre)
                 : ListView.separated(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                     itemCount: posts.length,
@@ -111,12 +101,25 @@ class DiscussionThreadScreen extends StatelessWidget {
                     itemBuilder: (context, index) => _PostBubble(
                       post: posts[index],
                       accentColor: genre.primaryAccent,
+                      onLikeTap: () => postProvider.toggleLike(
+                        genreId: genre.id,
+                        subGenreId: activeSubGenreId!,
+                        postId: posts[index].id,
+                      ),
                     ),
                   ),
           ),
 
           // ── Compose bar ──────────────────────────────────
-          _ComposeBar(accentColor: genre.primaryAccent),
+          if (activeSubGenre != null)
+            _ComposeBar(
+              accentColor: genre.primaryAccent,
+              onSubmit: (content) => postProvider.addPost(
+                genreId: genre.id,
+                subGenreId: activeSubGenreId!,
+                content: content,
+              ),
+            ),
         ],
       ),
     );
@@ -127,10 +130,7 @@ class _EmptyThreadState extends StatelessWidget {
   final Genre genre;
   final SubGenre? subGenre;
 
-  const _EmptyThreadState({
-    required this.genre,
-    required this.subGenre,
-  });
+  const _EmptyThreadState({required this.genre, required this.subGenre});
 
   @override
   Widget build(BuildContext context) {
@@ -150,11 +150,7 @@ class _EmptyThreadState extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.forum_outlined,
-                size: 40,
-                color: genre.primaryAccent,
-              ),
+              Icon(Icons.forum_outlined, size: 40, color: genre.primaryAccent),
               const SizedBox(height: 14),
               Text(
                 'No posts yet',
@@ -188,8 +184,13 @@ class _EmptyThreadState extends StatelessWidget {
 class _PostBubble extends StatelessWidget {
   final Post post;
   final Color accentColor;
+  final VoidCallback onLikeTap;
 
-  const _PostBubble({required this.post, required this.accentColor});
+  const _PostBubble({
+    required this.post,
+    required this.accentColor,
+    required this.onLikeTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -198,9 +199,7 @@ class _PostBubble extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         color: const Color(0xFF1A1A1A),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.06),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,11 +217,8 @@ class _PostBubble extends StatelessWidget {
                     height: 36,
                     fit: BoxFit.cover,
                     placeholder: (_, _) => const SizedBox(),
-                    errorWidget: (_, _, _) => Icon(
-                      Icons.person,
-                      size: 20,
-                      color: accentColor,
-                    ),
+                    errorWidget: (_, _, _) =>
+                        Icon(Icons.person, size: 20, color: accentColor),
                   ),
                 ),
               ),
@@ -251,8 +247,11 @@ class _PostBubble extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () {},
-                icon: const Icon(Icons.more_horiz,
-                    size: 18, color: Colors.white38),
+                icon: const Icon(
+                  Icons.more_horiz,
+                  size: 18,
+                  color: Colors.white38,
+                ),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
               ),
@@ -282,9 +281,13 @@ class _PostBubble extends StatelessWidget {
           Row(
             children: [
               _ActionChip(
-                icon: Icons.favorite_border,
+                icon: post.isLikedByUser
+                    ? Icons.favorite
+                    : Icons.favorite_border,
                 label: '${post.likes}',
-                color: accentColor,
+                color: post.isLikedByUser ? accentColor : Colors.white54,
+                onTap: onLikeTap,
+                isFilled: post.isLikedByUser,
               ),
               const SizedBox(width: 16),
               _ActionChip(
@@ -333,10 +336,8 @@ class _MediaPlaceholder extends StatelessWidget {
           height: 180,
           width: double.infinity,
           fit: BoxFit.cover,
-          placeholder: (_, _) => Container(
-            height: 180,
-            color: accentColor.withValues(alpha: 0.1),
-          ),
+          placeholder: (_, _) =>
+              Container(height: 180, color: accentColor.withValues(alpha: 0.1)),
           errorWidget: (_, _, _) => Container(
             height: 180,
             color: accentColor.withValues(alpha: 0.1),
@@ -364,9 +365,7 @@ class _AudioPlayerPlaceholder extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: accentColor.withValues(alpha: 0.1),
-        border: Border.all(
-          color: accentColor.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: accentColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -398,10 +397,7 @@ class _AudioPlayerPlaceholder extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   '0:00 / 2:34',
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    color: Colors.white38,
-                  ),
+                  style: GoogleFonts.inter(fontSize: 10, color: Colors.white38),
                 ),
               ],
             ),
@@ -449,33 +445,109 @@ class _ActionChip extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
+  final VoidCallback? onTap;
+  final bool isFilled;
 
   const _ActionChip({
     required this.icon,
     required this.label,
     required this.color,
+    this.onTap,
+    this.isFilled = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final chip = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 16, color: color),
         const SizedBox(width: 4),
-        Text(
-          label,
-          style: GoogleFonts.inter(fontSize: 12, color: color),
-        ),
+        Text(label, style: GoogleFonts.inter(fontSize: 12, color: color)),
       ],
+    );
+
+    if (onTap == null) {
+      return chip;
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: isFilled
+                ? color.withValues(alpha: 0.12)
+                : Colors.transparent,
+          ),
+          child: chip,
+        ),
+      ),
     );
   }
 }
 
 // ── Compose bar at the bottom ────────────────────────────────
-class _ComposeBar extends StatelessWidget {
+class _ComposeBar extends StatefulWidget {
   final Color accentColor;
-  const _ComposeBar({required this.accentColor});
+  final Future<void> Function(String content) onSubmit;
+
+  const _ComposeBar({required this.accentColor, required this.onSubmit});
+
+  @override
+  State<_ComposeBar> createState() => _ComposeBarState();
+}
+
+class _ComposeBarState extends State<_ComposeBar> {
+  late final TextEditingController _controller;
+  bool _isSubmitting = false;
+
+  bool get _hasText => _controller.text.trim().isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController()..addListener(_handleTextChanged);
+  }
+
+  @override
+  void dispose() {
+    _controller
+      ..removeListener(_handleTextChanged)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _handleTextChanged() {
+    setState(() {});
+  }
+
+  Future<void> _submit() async {
+    if (_isSubmitting || !_hasText) {
+      return;
+    }
+
+    final content = _controller.text.trim();
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    await widget.onSubmit(content);
+
+    if (!mounted) {
+      return;
+    }
+
+    _controller.clear();
+    setState(() {
+      _isSubmitting = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -489,55 +561,77 @@ class _ComposeBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF141414),
         border: Border(
-          top: BorderSide(
-            color: Colors.white.withValues(alpha: 0.06),
-          ),
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
         ),
       ),
       child: Row(
         children: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.add_circle_outline,
-                color: Colors.white38, size: 22),
+            icon: const Icon(
+              Icons.add_circle_outline,
+              color: Colors.white38,
+              size: 22,
+            ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 color: const Color(0xFF1A1A1A),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.08),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
               ),
-              child: Text(
-                'Add to the thread...',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: Colors.white30,
+              child: TextField(
+                controller: _controller,
+                minLines: 1,
+                maxLines: 4,
+                textInputAction: TextInputAction.send,
+                onSubmitted: (_) => _submit(),
+                style: GoogleFonts.inter(fontSize: 13, color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Add to the thread...',
+                  hintStyle: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: Colors.white30,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                 ),
               ),
             ),
           ),
           const SizedBox(width: 12),
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: accentColor,
-            ),
-            child: Icon(
-              Icons.send,
-              size: 16,
-              color: accentColor.computeLuminance() > 0.5
-                  ? Colors.black
-                  : Colors.white,
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _hasText && !_isSubmitting ? _submit : null,
+              borderRadius: BorderRadius.circular(18),
+              child: Ink(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: (_hasText && !_isSubmitting)
+                      ? widget.accentColor
+                      : Colors.white10,
+                ),
+                child: Icon(
+                  _isSubmitting ? Icons.hourglass_top : Icons.send,
+                  size: 16,
+                  color: (_hasText && !_isSubmitting)
+                      ? (widget.accentColor.computeLuminance() > 0.5
+                            ? Colors.black
+                            : Colors.white)
+                      : Colors.white38,
+                ),
+              ),
             ),
           ),
         ],
