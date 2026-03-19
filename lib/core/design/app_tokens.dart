@@ -43,6 +43,13 @@ class AppTokens {
   // Icon sizes
   static const double iconSM = 16;
   static const double iconMD = 22;
+  static const double iconLG = 30;
+
+  // Layout constants
+  static const double layoutExploreFeaturedSectionHeight = 192;
+  static const double layoutExploreFeaturedCardWidth = 288;
+  static const double layoutExploreGenreGridAspectRatio = 1.3333333333333333;
+  static const int layoutExploreGenreGridCrossAxisCount = 2;
 
   // Elevation and border
   static const double elevationNone = 0;
