@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/design/app_tokens.dart';
 import '../models/genre.dart';
 
 /// Breadcrumb segment: label + optional tap callback.
@@ -66,11 +67,13 @@ class BreadcrumbBar extends StatelessWidget {
           child: Text(
             item.label,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: AppTokens.textSM,
               fontWeight: isLast ? FontWeight.w600 : FontWeight.w400,
               color: isLast
                   ? accentColor
-                  : Colors.white.withValues(alpha: 0.5),
+                  : Colors.white.withValues(
+                      alpha: AppTokens.opacityBreadcrumbIdle,
+                    ),
             ),
           ),
         ),
@@ -79,11 +82,15 @@ class BreadcrumbBar extends StatelessWidget {
       if (!isLast) {
         widgets.add(
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTokens.spaceXS + AppTokens.spaceXXS,
+            ),
             child: Icon(
               Icons.chevron_right,
-              size: 16,
-              color: Colors.white.withValues(alpha: 0.3),
+              size: AppTokens.iconSM,
+              color: Colors.white.withValues(
+                alpha: AppTokens.opacityBreadcrumbChevron,
+              ),
             ),
           ),
         );

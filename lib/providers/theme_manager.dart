@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../core/design/app_tokens.dart';
 import '../models/genre.dart';
 
 /// Manages dynamic theming based on the active genre.
@@ -20,18 +21,19 @@ class ThemeManager extends ChangeNotifier {
 
   // ── Derived colors ───────────────────────────────────────
   Color get primaryAccent =>
-      _activeGenre?.primaryAccent ?? const Color(0xFF9C27B0);
+      _activeGenre?.primaryAccent ?? AppTokens.fallbackPrimaryAccent;
 
   Color get secondaryAccent =>
-      _activeGenre?.secondaryAccent ?? const Color(0xFF7C4DFF);
+      _activeGenre?.secondaryAccent ?? AppTokens.fallbackSecondaryAccent;
 
-  Color get scaffoldBg => const Color(0xFF0D0D0D);
+  Color get scaffoldBg => AppTokens.colorScaffoldBg;
 
-  Color get surfaceColor => const Color(0xFF1A1A1A);
+  Color get surfaceColor => AppTokens.colorSurface;
 
-  Color get cardColor => const Color(0xFF242424);
+  Color get cardColor => AppTokens.colorCard;
 
-  Color get dividerColor => Colors.white.withValues(alpha: 0.08);
+  Color get dividerColor =>
+      Colors.white.withValues(alpha: AppTokens.opacityDivider);
 
   // ── Theme Data ───────────────────────────────────────────
   ThemeData get themeData {
@@ -53,44 +55,57 @@ class ThemeManager extends ChangeNotifier {
       appBarTheme: AppBarTheme(
         backgroundColor: scaffoldBg,
         foregroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
+        elevation: AppTokens.elevationNone,
+        scrolledUnderElevation: AppTokens.elevationNone,
         centerTitle: false,
         titleTextStyle: GoogleFonts.inter(
-          fontSize: 20,
+          fontSize: AppTokens.textTitle,
           fontWeight: FontWeight.w700,
           color: Colors.white,
         ),
       ),
       cardTheme: CardThemeData(
         color: cardColor,
-        elevation: 0,
+        elevation: AppTokens.elevationNone,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppTokens.radiusLG),
         ),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: surfaceColor,
         selectedColor: accent,
         labelStyle: GoogleFonts.inter(
-          fontSize: 13,
+          fontSize: AppTokens.textSM,
           fontWeight: FontWeight.w500,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppTokens.radiusXL),
         ),
-        side: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        side: BorderSide(
+          color: Colors.white.withValues(alpha: AppTokens.opacityChipBorder),
+        ),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppTokens.spaceSMPlus,
+          vertical: AppTokens.spaceXS + AppTokens.spaceXXS,
+        ),
       ),
       textTheme: _buildTextTheme(),
-      iconTheme: const IconThemeData(color: Colors.white70, size: 22),
-      dividerTheme: DividerThemeData(color: dividerColor, thickness: 1),
+      iconTheme: const IconThemeData(
+        color: Colors.white70,
+        size: AppTokens.iconMD,
+      ),
+      dividerTheme: DividerThemeData(
+        color: dividerColor,
+        thickness: AppTokens.borderThin,
+      ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: scaffoldBg,
         selectedItemColor: accent,
-        unselectedItemColor: Colors.white38,
+        unselectedItemColor: Colors.white.withValues(
+          alpha: AppTokens.opacityNavUnselected,
+        ),
         type: BottomNavigationBarType.fixed,
-        elevation: 0,
+        elevation: AppTokens.elevationNone,
       ),
     );
   }
@@ -99,85 +114,79 @@ class ThemeManager extends ChangeNotifier {
   TextTheme _buildTextTheme() {
     return TextTheme(
       displayLarge: GoogleFonts.inter(
-        fontSize: 32,
+        fontSize: AppTokens.text3XL,
         fontWeight: FontWeight.w800,
         color: Colors.white,
-        letterSpacing: -0.5,
+        letterSpacing: AppTokens.letterSpacingTight,
       ),
       headlineLarge: GoogleFonts.inter(
-        fontSize: 28,
+        fontSize: AppTokens.text2XL,
         fontWeight: FontWeight.w700,
         color: Colors.white,
       ),
       headlineMedium: GoogleFonts.inter(
-        fontSize: 22,
+        fontSize: AppTokens.textXL,
         fontWeight: FontWeight.w700,
         color: Colors.white,
       ),
       headlineSmall: GoogleFonts.inter(
-        fontSize: 18,
+        fontSize: AppTokens.textLG,
         fontWeight: FontWeight.w600,
         color: Colors.white,
       ),
       titleLarge: GoogleFonts.inter(
-        fontSize: 16,
+        fontSize: AppTokens.textMDPlus,
         fontWeight: FontWeight.w600,
         color: Colors.white,
       ),
       titleMedium: GoogleFonts.inter(
-        fontSize: 14,
+        fontSize: AppTokens.textMD,
         fontWeight: FontWeight.w500,
         color: Colors.white70,
       ),
       bodyLarge: GoogleFonts.inter(
-        fontSize: 15,
+        fontSize: AppTokens.textMD,
         fontWeight: FontWeight.w400,
         color: Colors.white,
-        height: 1.5,
+        height: AppTokens.lineHeightRelaxed,
       ),
       bodyMedium: GoogleFonts.inter(
-        fontSize: 13,
+        fontSize: AppTokens.textSM,
         fontWeight: FontWeight.w400,
-        color: Colors.white70,
-        height: 1.5,
+        color: Colors.white.withValues(alpha: AppTokens.opacityTextMuted),
+        height: AppTokens.lineHeightRelaxed,
       ),
       labelLarge: GoogleFonts.inter(
-        fontSize: 14,
+        fontSize: AppTokens.textMD,
         fontWeight: FontWeight.w600,
         color: Colors.white,
       ),
       labelSmall: GoogleFonts.inter(
-        fontSize: 11,
+        fontSize: AppTokens.textXS,
         fontWeight: FontWeight.w500,
-        color: Colors.white54,
-        letterSpacing: 0.5,
+        color: Colors.white.withValues(alpha: AppTokens.opacityTextSubtle),
+        letterSpacing: AppTokens.letterSpacingWide,
       ),
     );
   }
 
   // ── Helpers ──────────────────────────────────────────────
   static Color _contrastTextColor(Color bg) {
-    return bg.computeLuminance() > 0.5 ? Colors.black : Colors.white;
+    return bg.computeLuminance() > AppTokens.contrastLuminanceThreshold
+        ? Colors.black
+        : Colors.white;
   }
 
   /// Returns a gradient suitable for genre hero headers.
-  LinearGradient get heroGradient => LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          primaryAccent.withValues(alpha: 0.6),
-          secondaryAccent.withValues(alpha: 0.3),
-          scaffoldBg,
-        ],
-        stops: const [0.0, 0.5, 1.0],
-      );
+  LinearGradient get heroGradient => AppTokens.heroGradient(
+    primaryAccent: primaryAccent,
+    secondaryAccent: secondaryAccent,
+    scaffoldBg: scaffoldBg,
+  );
 
   /// Returns a shimmer gradient for loading placeholders.
-  LinearGradient get shimmerGradient => LinearGradient(
-        colors: [
-          cardColor,
-          surfaceColor,
-          cardColor,
-        ],
-      );
+  LinearGradient get shimmerGradient => AppTokens.shimmerGradient(
+    cardColor: cardColor,
+    surfaceColor: surfaceColor,
+  );
 }
