@@ -3,7 +3,17 @@ import '../models/genre.dart';
 
 /// Manages the hierarchical navigation state:
 /// Explore → Genre → Sub-genre → Discussion
-enum AppScreen { onboarding, explore, genre, subGenre, discussion }
+///
+/// Account and edit profile are top-level tabs that stay outside the genre drilldown flow.
+enum AppScreen {
+  onboarding,
+  explore,
+  genre,
+  subGenre,
+  discussion,
+  account,
+  editProfile,
+}
 
 class NavigationProvider extends ChangeNotifier {
   AppScreen _currentScreen = AppScreen.onboarding;
@@ -21,6 +31,11 @@ class NavigationProvider extends ChangeNotifier {
   void completeOnboarding() {
     _onboardingComplete = true;
     _currentScreen = AppScreen.explore;
+    notifyListeners();
+  }
+
+  void goToOnboarding() {
+    _currentScreen = AppScreen.onboarding;
     notifyListeners();
   }
 
@@ -49,6 +64,21 @@ class NavigationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void goToAccount() {
+    _currentScreen = AppScreen.account;
+    notifyListeners();
+  }
+
+  void goToEditProfile() {
+    _currentScreen = AppScreen.editProfile;
+    notifyListeners();
+  }
+
+  void goToLastThread() {
+    _currentScreen = AppScreen.discussion;
+    notifyListeners();
+  }
+
   void goBack() {
     switch (_currentScreen) {
       case AppScreen.discussion:
@@ -61,6 +91,10 @@ class NavigationProvider extends ChangeNotifier {
       case AppScreen.genre:
         _currentScreen = AppScreen.explore;
         _selectedGenre = null;
+        break;
+      case AppScreen.account:
+      case AppScreen.editProfile:
+        _currentScreen = AppScreen.explore;
         break;
       case AppScreen.explore:
       case AppScreen.onboarding:

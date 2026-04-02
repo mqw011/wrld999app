@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import 'models/genre.dart';
+import 'models/post.dart';
+import 'providers/post_provider.dart';
 import 'providers/theme_manager.dart';
 import 'providers/navigation_provider.dart';
+import 'providers/user_provider.dart';
+import 'screens/account_screen.dart';
+import 'screens/edit_profile_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/explore_hub_screen.dart';
 import 'screens/genre_page.dart';
@@ -31,7 +37,9 @@ class NineNineNineApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeManager()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
+        ChangeNotifierProvider(create: (_) => PostProvider()),
       ],
       child: Consumer<ThemeManager>(
         builder: (context, themeManager, _) {
@@ -56,34 +64,71 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final nav = context.watch<NavigationProvider>();
     final tm = context.read<ThemeManager>();
+    final userProvider = context.watch<UserProvider>();
 
     return PopScope(
       canPop: !nav.canGoBack,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) nav.goBack();
       },
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        switchInCurve: Curves.easeOut,
-        switchOutCurve: Curves.easeIn,
-        transitionBuilder: (child, animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0.04, 0),
-                end: Offset.zero,
-              ).animate(animation),
-              child: child,
+      child: nav.currentScreen == AppScreen.onboarding
+          ? AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOut,
+              switchOutCurve: Curves.easeIn,
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.04, 0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                );
+              },
+              child: KeyedSubtree(
+                key: ValueKey(nav.currentScreen),
+                child: _buildScreen(nav, tm, userProvider),
+              ),
+            )
+          : Column(
+              children: [
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeIn,
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0.04, 0),
+                            end: Offset.zero,
+                          ).animate(animation),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: KeyedSubtree(
+                      key: ValueKey(nav.currentScreen),
+                      child: _buildScreen(nav, tm, userProvider),
+                    ),
+                  ),
+                ),
+                _buildBottomNavigationBar(context, nav, tm),
+              ],
             ),
-          );
-        },
-        child: _buildScreen(nav, tm),
-      ),
     );
   }
 
-  Widget _buildScreen(NavigationProvider nav, ThemeManager tm) {
+  Widget _buildScreen(
+    NavigationProvider nav,
+    ThemeManager tm,
+    UserProvider userProvider,
+  ) {
     switch (nav.currentScreen) {
       case AppScreen.onboarding:
         return const OnboardingScreen(key: ValueKey('onboarding'));
@@ -111,16 +156,157 @@ class AppShell extends StatelessWidget {
         return const ExploreHubScreen(key: ValueKey('explore-fallback2'));
 
       case AppScreen.discussion:
-        if (nav.selectedGenre != null) {
+        final resolvedThread = _resolveThread(nav, userProvider.user.lastThreadKey);
+        if (resolvedThread != null) {
           return DiscussionThreadScreen(
-            key: const ValueKey('discussion'),
-            genre: nav.selectedGenre!,
-            subGenre: nav.selectedSubGenre,
+            key: ValueKey('discussion-${resolvedThread.threadKey}'),
+            genre: resolvedThread.genre,
+            subGenre: resolvedThread.subGenre,
           );
         }
         return const ExploreHubScreen(key: ValueKey('explore-fallback3'));
+
+      case AppScreen.account:
+        return const AccountScreen(key: ValueKey('account'));
+
+      case AppScreen.editProfile:
+        return const EditProfileScreen(key: ValueKey('edit-profile'));
     }
+  }
+
+  Widget _buildBottomNavigationBar(
+    BuildContext context,
+    NavigationProvider nav,
+    ThemeManager tm,
+  ) {
+    final currentIndex = switch (nav.currentScreen) {
+      AppScreen.discussion => 1,
+      AppScreen.account || AppScreen.editProfile => 2,
+      _ => 0,
+    };
+
+    return Container(
+      decoration: BoxDecoration(
+        color: tm.scaffoldBg,
+        border: Border(top: BorderSide(color: tm.dividerColor)),
+      ),
+      child: BottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              nav.navigateToExplore();
+              break;
+            case 1:
+              nav.goToLastThread();
+              break;
+            case 2:
+              nav.goToAccount();
+              break;
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.explore_outlined),
+            activeIcon: Icon(Icons.explore),
+            label: 'Explore',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.forum_outlined),
+            activeIcon: Icon(Icons.forum),
+            label: 'Discussions',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+
+  _ResolvedThread? _resolveThread(NavigationProvider nav, String? lastThreadKey) {
+    final parsedLastThread = _threadFromKey(lastThreadKey);
+    if (parsedLastThread != null) {
+      return parsedLastThread;
+    }
+
+    if (nav.selectedGenre != null) {
+      final genre = nav.selectedGenre!;
+      final subGenre = nav.selectedSubGenre ??
+          (genre.subGenres.isNotEmpty ? genre.subGenres.first : null);
+      if (subGenre != null) {
+        return _ResolvedThread(
+          threadKey: Post.buildThreadKey(genreId: genre.id, subGenreId: subGenre.id),
+          genre: genre,
+          subGenre: subGenre,
+        );
+      }
+    }
+
+    for (final genre in Genre.allGenres) {
+      if (genre.subGenres.isNotEmpty) {
+        final subGenre = genre.subGenres.first;
+        return _ResolvedThread(
+          threadKey: Post.buildThreadKey(genreId: genre.id, subGenreId: subGenre.id),
+          genre: genre,
+          subGenre: subGenre,
+        );
+      }
+    }
+
+    return null;
+  }
+
+  _ResolvedThread? _threadFromKey(String? threadKey) {
+    if (threadKey == null || threadKey.isEmpty) {
+      return null;
+    }
+
+    final parts = threadKey.split(':');
+    if (parts.length != 2) {
+      return null;
+    }
+
+    final genre = _genreById(parts[0]);
+    if (genre == null) {
+      return null;
+    }
+
+    final subGenre = genre.subGenres.where((item) => item.id == parts[1]).cast<SubGenre?>().firstWhere(
+      (item) => item != null,
+      orElse: () => null,
+    );
+    if (subGenre == null) {
+      return null;
+    }
+
+    return _ResolvedThread(
+      threadKey: threadKey,
+      genre: genre,
+      subGenre: subGenre,
+    );
+  }
+
+  Genre? _genreById(String genreId) {
+    for (final genre in Genre.allGenres) {
+      if (genre.id == genreId) {
+        return genre;
+      }
+    }
+    return null;
   }
 }
 
+class _ResolvedThread {
+  final String threadKey;
+  final Genre genre;
+  final SubGenre subGenre;
 
+  const _ResolvedThread({
+    required this.threadKey,
+    required this.genre,
+    required this.subGenre,
+  });
+}
