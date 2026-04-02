@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../data/local_search_history_data_source.dart';
 import '../models/genre.dart';
 import '../providers/navigation_provider.dart';
 import '../providers/theme_manager.dart';
@@ -18,13 +19,18 @@ class ExploreHubScreen extends StatefulWidget {
 class _ExploreHubScreenState extends State<ExploreHubScreen> {
   late final TextEditingController _searchController;
   late final FocusNode _searchFocusNode;
+  late final SearchHistoryDataSource _searchHistoryDataSource;
   String _searchQuery = '';
+  List<String> _searchHistory = [];
+  bool _isSearchHistoryLoaded = false;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
     _searchFocusNode = FocusNode();
+    _searchHistoryDataSource = LocalSearchHistoryDataSource();
+    _loadSearchHistory();
   }
 
   @override
@@ -32,6 +38,74 @@ class _ExploreHubScreenState extends State<ExploreHubScreen> {
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadSearchHistory() async {
+    final loadedHistory = await _searchHistoryDataSource.loadSearchHistory();
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _searchHistory = loadedHistory.take(5).toList(growable: false);
+      _isSearchHistoryLoaded = true;
+    });
+  }
+
+  Future<void> _submitSearch(String rawQuery) async {
+    final query = rawQuery.trim();
+    if (query.isEmpty) {
+      return;
+    }
+
+    if (_searchController.text != query) {
+      _searchController.value = TextEditingValue(
+        text: query,
+        selection: TextSelection.collapsed(offset: query.length),
+      );
+    }
+
+    setState(() {
+      _searchQuery = query;
+    });
+
+    await _saveSearchHistory(query);
+  }
+
+  Future<void> _saveSearchHistory(String query) async {
+    final normalizedQuery = query.toLowerCase();
+    final updatedHistory = <String>[
+      query,
+      ..._searchHistory.where(
+        (historyItem) => historyItem.toLowerCase() != normalizedQuery,
+      ),
+    ].take(5).toList(growable: false);
+
+    setState(() {
+      _searchHistory = updatedHistory;
+      _isSearchHistoryLoaded = true;
+    });
+
+    await _searchHistoryDataSource.saveSearchHistory(updatedHistory);
+  }
+
+  Future<void> _removeSearchHistoryItem(String query) async {
+    final normalizedQuery = query.toLowerCase();
+    final updatedHistory = _searchHistory
+        .where((historyItem) => historyItem.toLowerCase() != normalizedQuery)
+        .toList(growable: false);
+
+    setState(() {
+      _searchHistory = updatedHistory;
+      _isSearchHistoryLoaded = true;
+    });
+
+    await _searchHistoryDataSource.saveSearchHistory(updatedHistory);
+  }
+
+  Future<void> _reuseSearchHistoryItem(String query) async {
+    _searchFocusNode.requestFocus();
+    await _submitSearch(query);
   }
 
   @override
@@ -136,6 +210,8 @@ class _ExploreHubScreenState extends State<ExploreHubScreen> {
                     child: TextField(
                       controller: _searchController,
                       focusNode: _searchFocusNode,
+                      textInputAction: TextInputAction.search,
+                      onSubmitted: _submitSearch,
                       onChanged: (value) {
                         setState(() {
                           _searchQuery = value;
@@ -177,6 +253,37 @@ class _ExploreHubScreenState extends State<ExploreHubScreen> {
                       ),
                     ),
                   ),
+                  if (_isSearchHistoryLoaded && _searchHistory.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    Text(
+                      'Search History',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white70,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 42,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _searchHistory.length,
+                        separatorBuilder: (_, _) => const SizedBox(width: 10),
+                        itemBuilder: (context, index) {
+                          final query = _searchHistory[index];
+                          return _SearchHistoryChip(
+                            query: query,
+                            accentColor: tm.primaryAccent,
+                            backgroundColor: tm.cardColor,
+                            onTap: () => _reuseSearchHistoryItem(query),
+                            onDelete: () => _removeSearchHistoryItem(query),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                   if (isSearching) ...[
                     const SizedBox(height: 10),
                     Text(
@@ -456,6 +563,64 @@ class _TrendingCard extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchHistoryChip extends StatelessWidget {
+  final String query;
+  final Color accentColor;
+  final Color backgroundColor;
+  final VoidCallback onTap;
+  final VoidCallback onDelete;
+
+  const _SearchHistoryChip({
+    required this.query,
+    required this.accentColor,
+    required this.backgroundColor,
+    required this.onTap,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: accentColor.withValues(alpha: 0.18)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.history, size: 14, color: accentColor),
+              const SizedBox(width: 8),
+              Text(
+                query,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                onPressed: onDelete,
+                icon: const Icon(Icons.close, size: 14, color: Colors.white54),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints.tightFor(width: 22, height: 22),
+                splashRadius: 14,
+              ),
+            ],
+          ),
         ),
       ),
     );
