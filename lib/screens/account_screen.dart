@@ -9,6 +9,7 @@ import '../providers/navigation_provider.dart';
 import '../providers/post_provider.dart';
 import '../providers/theme_manager.dart';
 import '../providers/user_provider.dart';
+import '../services/auth_service.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -17,6 +18,7 @@ class AccountScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeManager = context.watch<ThemeManager>();
     final navigationProvider = context.read<NavigationProvider>();
+    final authService = context.read<AuthService>();
     final userProvider = context.watch<UserProvider>();
     final postProvider = context.watch<PostProvider>();
     final user = userProvider.user;
@@ -91,6 +93,35 @@ class AccountScreen extends StatelessWidget {
                   await userProvider.resetOnboarding();
                   navigationProvider.goToOnboarding();
                 },
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await authService.signOut();
+                    navigationProvider.goToLogin();
+                  },
+                  icon: const Icon(Icons.logout_rounded, size: 18),
+                  label: Text(
+                    'Sign Out',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFFF6B6B),
+                    backgroundColor: const Color(0xFFFF6B6B).withValues(
+                      alpha: 0.08,
+                    ),
+                    side: const BorderSide(color: Color(0xFFFF6B6B), width: 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),

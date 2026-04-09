@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../data/firestore_post_data_source.dart';
 import '../data/local_post_data_source.dart';
 import '../models/post.dart';
 
 class PostProvider extends ChangeNotifier {
   PostProvider({PostDataSource? dataSource})
-    : _dataSource = dataSource ?? LocalPostDataSource() {
+    : _dataSource = dataSource ?? FirestorePostDataSource() {
     _initialLoad = _loadThreads();
   }
 

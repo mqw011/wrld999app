@@ -6,6 +6,7 @@ import '../models/genre.dart';
 ///
 /// Account and edit profile are top-level tabs that stay outside the genre drilldown flow.
 enum AppScreen {
+  login,
   onboarding,
   explore,
   genre,
@@ -16,7 +17,7 @@ enum AppScreen {
 }
 
 class NavigationProvider extends ChangeNotifier {
-  AppScreen _currentScreen = AppScreen.onboarding;
+  AppScreen _currentScreen = AppScreen.login;
   Genre? _selectedGenre;
   SubGenre? _selectedSubGenre;
   bool _onboardingComplete = false;
@@ -31,6 +32,21 @@ class NavigationProvider extends ChangeNotifier {
   void completeOnboarding() {
     _onboardingComplete = true;
     _currentScreen = AppScreen.explore;
+    notifyListeners();
+  }
+
+  void goToLogin() {
+    _currentScreen = AppScreen.login;
+    _selectedGenre = null;
+    _selectedSubGenre = null;
+    _onboardingComplete = false;
+    notifyListeners();
+  }
+
+  void goToOnboardingAfterAuth() {
+    _currentScreen = _onboardingComplete
+        ? AppScreen.explore
+        : AppScreen.onboarding;
     notifyListeners();
   }
 
@@ -96,6 +112,7 @@ class NavigationProvider extends ChangeNotifier {
       case AppScreen.editProfile:
         _currentScreen = AppScreen.explore;
         break;
+      case AppScreen.login:
       case AppScreen.explore:
       case AppScreen.onboarding:
         break;
@@ -106,5 +123,6 @@ class NavigationProvider extends ChangeNotifier {
   /// Whether a back action is available.
   bool get canGoBack =>
       _currentScreen != AppScreen.explore &&
+      _currentScreen != AppScreen.login &&
       _currentScreen != AppScreen.onboarding;
 }

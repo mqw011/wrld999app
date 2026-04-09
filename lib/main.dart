@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,6 +12,7 @@ import 'providers/post_provider.dart';
 import 'providers/theme_manager.dart';
 import 'providers/navigation_provider.dart';
 import 'providers/user_provider.dart';
+import 'screens/login_screen.dart';
 import 'screens/account_screen.dart';
 import 'screens/edit_profile_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -16,6 +20,8 @@ import 'screens/explore_hub_screen.dart';
 import 'screens/genre_page.dart';
 import 'screens/sub_genre_screen.dart';
 import 'screens/discussion_thread_screen.dart';
+import 'services/auth_service.dart';
+import 'services/migration_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +45,25 @@ class NineNineNineApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeManager()),
-        ChangeNotifierProvider(create: (_) => UserProvider()),
+        Provider<AuthService>(create: (_) => AuthService()),
+        Provider<MigrationService>(create: (_) => MigrationService()),
+        Provider<StreamSubscription<firebase_auth.User?>>(
+          create: (context) {
+            final authService = context.read<AuthService>();
+            final migrationService = context.read<MigrationService>();
+            return authService.authStateChanges.listen((authUser) {
+              if (authUser != null) {
+                unawaited(migrationService.migrate());
+              }
+            });
+          },
+          dispose: (_, subscription) => subscription.cancel(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => UserProvider(
+            authService: context.read<AuthService>(),
+          ),
+        ),
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
         ChangeNotifierProvider(create: (_) => PostProvider()),
       ],
@@ -74,7 +98,8 @@ class AppShell extends StatelessWidget {
           onPopInvokedWithResult: (didPop, _) {
             if (!didPop) nav.goBack();
           },
-          child: nav.currentScreen == AppScreen.onboarding
+            child: nav.currentScreen == AppScreen.onboarding ||
+              nav.currentScreen == AppScreen.login
               ? AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   switchInCurve: Curves.easeOut,
@@ -135,6 +160,9 @@ class AppShell extends StatelessWidget {
     UserProvider userProvider,
   ) {
     switch (nav.currentScreen) {
+      case AppScreen.login:
+        return const LoginScreen(key: ValueKey('login'));
+
       case AppScreen.onboarding:
         return const OnboardingScreen(key: ValueKey('onboarding'));
 
