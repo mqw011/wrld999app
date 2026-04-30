@@ -19,6 +19,7 @@
 
 import 'dart:convert';
 
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart';
 import 'package:logging/logging.dart';
 import 'package:wrld999/APIs/spotify_api.dart';
@@ -70,6 +71,16 @@ class Lyrics {
             await getMusixMatchLyrics(title: title, artist: artist);
         result['type'] = 'text';
         result['source'] = 'Musixmatch';
+        if (result['lyrics'] == '') {
+          Logger.root
+              .info('Lyrics not found on Musixmatch, searching on lyrics.ovh');
+          result['lyrics'] = await getLyricsOvhLyrics(
+            title: title,
+            artist: artist,
+          );
+          result['type'] = 'text';
+          result['source'] = 'Lyrics.ovh';
+        }
         if (result['lyrics'] == '') {
           Logger.root
               .info('Lyrics not found on Musixmatch, searching on Google');
@@ -228,7 +239,9 @@ class Lyrics {
           .body;
       lyrics = lyrics.split(delimiter1).last;
       lyrics = lyrics.split(delimiter2).first;
-      if (lyrics.contains('<meta charset="UTF-8">') || lyrics.contains('<html') || lyrics.contains('<body')) throw Error();
+      if (lyrics.contains('<meta charset="UTF-8">') ||
+          lyrics.contains('<html') ||
+          lyrics.contains('<body')) throw Error();
     } catch (_) {
       try {
         lyrics = (await get(
@@ -239,7 +252,9 @@ class Lyrics {
             .body;
         lyrics = lyrics.split(delimiter1).last;
         lyrics = lyrics.split(delimiter2).first;
-        if (lyrics.contains('<meta charset="UTF-8">') || lyrics.contains('<html') || lyrics.contains('<body')) throw Error();
+        if (lyrics.contains('<meta charset="UTF-8">') ||
+            lyrics.contains('<html') ||
+            lyrics.contains('<body')) throw Error();
       } catch (_) {
         try {
           lyrics = (await get(
@@ -252,7 +267,9 @@ class Lyrics {
               .body;
           lyrics = lyrics.split(delimiter1).last;
           lyrics = lyrics.split(delimiter2).first;
-          if (lyrics.contains('<meta charset="UTF-8">') || lyrics.contains('<html') || lyrics.contains('<body')) throw Error();
+          if (lyrics.contains('<meta charset="UTF-8">') ||
+              lyrics.contains('<html') ||
+              lyrics.contains('<body')) throw Error();
         } catch (_) {
           lyrics = '';
         }
@@ -261,7 +278,72 @@ class Lyrics {
     return lyrics.trim();
   }
 
+  static Future<String> getLyricsOvhLyrics({
+    required String title,
+    required String artist,
+  }) async {
+    final List<List<String>> candidates = [
+      [artist, title],
+      [artist, _cleanSongTitle(title)],
+      [_cleanArtistName(artist), _cleanSongTitle(title)],
+    ];
+
+    for (final candidate in candidates) {
+      final String cleanArtist = candidate[0].trim();
+      final String cleanTitle = candidate[1].trim();
+      if (cleanArtist.isEmpty || cleanTitle.isEmpty) continue;
+
+      try {
+        final Response res = await get(
+          Uri.https(
+            'api.lyrics.ovh',
+            '/v1/${Uri.encodeComponent(cleanArtist)}/${Uri.encodeComponent(cleanTitle)}',
+          ),
+          headers: {'Accept': 'application/json'},
+        );
+        if (res.statusCode != 200) continue;
+
+        final Map body = json.decode(res.body) as Map;
+        final String lyrics = body['lyrics']?.toString().trim() ?? '';
+        if (lyrics.isNotEmpty) {
+          return lyrics;
+        }
+      } catch (e) {
+        Logger.root.severe(
+            'Error in getLyricsOvhLyrics for $cleanTitle - $cleanArtist', e);
+      }
+    }
+
+    return '';
+  }
+
+  static String _cleanSongTitle(String title) {
+    return title
+        .replaceAll(RegExp(r'\s*\([^\)]*\)'), '')
+        .replaceAll(RegExp(r'\s*\[[^\]]*\]'), '')
+        .replaceAll(RegExp(r'\s+-\s+.*$'), '')
+        .replaceAll(RegExp(r'\s+feat\.?\s+.*$', caseSensitive: false), '')
+        .trim();
+  }
+
+  static String _cleanArtistName(String artist) {
+    return artist
+        .replaceAll(RegExp(r'\s*\([^\)]*\)'), '')
+        .replaceAll(RegExp(r'\s*\[[^\]]*\]'), '')
+        .trim();
+  }
+
   static Future<String> getOffLyrics(String path) async {
+    try {
+      final Box downloadsBox = Hive.box('downloads');
+      for (final song in downloadsBox.values) {
+        if (song is Map && song['path']?.toString() == path) {
+          return song['lyrics']?.toString().trim() ?? '';
+        }
+      }
+    } catch (e) {
+      Logger.root.severe('Error in getOffLyrics', e);
+    }
     return '';
   }
 

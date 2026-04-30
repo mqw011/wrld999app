@@ -10,6 +10,7 @@ import 'package:wrld999/Screens/Settings/download.dart';
 import 'package:wrld999/Screens/Settings/music_playback.dart';
 import 'package:wrld999/Screens/Settings/others.dart';
 import 'package:wrld999/Screens/Settings/theme.dart';
+import 'package:wrld999/Services/firebase_auth_service.dart';
 import 'package:wrld999/localization/app_localizations.dart';
 
 class NewSettingsPage extends StatefulWidget {
@@ -293,8 +294,46 @@ class _NewSettingsPageState extends State<NewSettingsPage>
             vertical: 15.0,
           ),
           physics: const BouncingScrollPhysics(),
-          itemCount: settingsList.length,
+          itemCount: settingsList.length + 1,
           itemBuilder: (context, index) {
+            if (index == settingsList.length) {
+              return ListTile(
+                leading: const Icon(Icons.logout_rounded),
+                title: const Text('Sign Out'),
+                subtitle: Text(
+                  Hive.box('settings').get('userEmail', defaultValue: '') as String,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onTap: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Sign Out'),
+                      content: const Text('Are you sure you want to sign out?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text('Sign Out'),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirmed == true && context.mounted) {
+                    await FirebaseAuthService.signOut();
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/',
+                      (route) => false,
+                    );
+                  }
+                },
+              );
+            }
             return ListTile(
               leading: Icon(settingsList[index]['icon'] as IconData),
               title: Text(settingsList[index]['title'].toString()),

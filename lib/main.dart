@@ -2,15 +2,16 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
-import 'package:wrld999/localization/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:logging/logging.dart';
 import 'package:just_audio_media_kit/just_audio_media_kit.dart';
+import 'package:logging/logging.dart';
 import 'package:metadata_god/metadata_god.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
@@ -32,6 +33,8 @@ import 'package:wrld999/Screens/Login/pref.dart';
 import 'package:wrld999/Screens/Player/audioplayer.dart';
 import 'package:wrld999/Screens/Settings/new_settings_page.dart';
 import 'package:wrld999/Services/audio_service.dart';
+import 'package:wrld999/firebase_options.dart';
+import 'package:wrld999/localization/app_localizations.dart';
 import 'package:wrld999/theme/app_theme.dart';
 
 Future<void> main() async {
@@ -42,6 +45,7 @@ Future<void> main() async {
 
 Future<void> _appMain() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // ytdl_hook.lua is embedded in system libmpv (mpv 0.41.0). It intercepts
   // YouTube CDN URLs and tries to run yt-dlp, which is not installed, causing
   // stream open failure. Disable it before libmpv is initialized.
@@ -246,9 +250,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget initialFuntion() {
-    return Hive.box('settings').get('userId') != null
-        ? HomePage()
-        : AuthScreen();
+    final bool hasLocalUser = Hive.box('settings').get('userId') != null;
+    final bool hasFirebaseUser = FirebaseAuth.instance.currentUser != null;
+    return (hasLocalUser || hasFirebaseUser) ? HomePage() : AuthScreen();
   }
 
   @override
