@@ -1,0 +1,505 @@
+{
+  "nodes": [
+    {
+      "id": "assets_gpay_black_logo",
+      "label": "Google Pay Black Brand Mark",
+      "file_type": "image",
+      "source_file": "assets/gpay-black.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "assets_gpay_white_logo",
+      "label": "Google Pay White Brand Mark",
+      "file_type": "image",
+      "source_file": "assets/gpay-white.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "assets_header_dark_hero",
+      "label": "Dark Header Hero Artwork",
+      "file_type": "image",
+      "source_file": "assets/header-dark.jpg",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "assets_header_light_hero",
+      "label": "Light Header Hero Artwork",
+      "file_type": "image",
+      "source_file": "assets/header.jpg",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "assets_ic_launcher_logo",
+      "label": "BlackHole Launcher Icon",
+      "file_type": "image",
+      "source_file": "assets/ic_launcher.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "assets_icon_white_transparent_logo",
+      "label": "White Transparent App Logo",
+      "file_type": "image",
+      "source_file": "assets/icon-white-trans.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "assets_lyrics_feature_icon",
+      "label": "Lyrics Feature Icon",
+      "file_type": "image",
+      "source_file": "assets/lyrics.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "assets_song_feature_icon",
+      "label": "Song Feature Icon",
+      "file_type": "image",
+      "source_file": "assets/song.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "assets_youtube_cover_placeholder",
+      "label": "YouTube Cover Placeholder",
+      "file_type": "image",
+      "source_file": "assets/ytCover.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fastlane_full_description_features",
+      "label": "Play Store Full Description Features",
+      "file_type": "document",
+      "source_file": "fastlane/metadata/android/en-US/full_description.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fastlane_short_description_tagline",
+      "label": "Play Store Short Description Tagline",
+      "file_type": "document",
+      "source_file": "fastlane/metadata/android/en-US/short_description.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fastlane_title_blackhole",
+      "label": "Play Store Title BlackHole",
+      "file_type": "document",
+      "source_file": "fastlane/metadata/android/en-US/title.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fastlane_store_icon",
+      "label": "Play Store Listing Icon",
+      "file_type": "image",
+      "source_file": "fastlane/metadata/android/en-US/images/icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fastlane_screenshot_1",
+      "label": "Phone Screenshot 1",
+      "file_type": "image",
+      "source_file": "fastlane/metadata/android/en-US/images/phoneScreenshots/1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fastlane_screenshot_2",
+      "label": "Phone Screenshot 2",
+      "file_type": "image",
+      "source_file": "fastlane/metadata/android/en-US/images/phoneScreenshots/2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fastlane_screenshot_3",
+      "label": "Phone Screenshot 3",
+      "file_type": "image",
+      "source_file": "fastlane/metadata/android/en-US/images/phoneScreenshots/3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fastlane_screenshot_4",
+      "label": "Phone Screenshot 4",
+      "file_type": "image",
+      "source_file": "fastlane/metadata/android/en-US/images/phoneScreenshots/4.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fastlane_screenshot_5",
+      "label": "Phone Screenshot 5",
+      "file_type": "image",
+      "source_file": "fastlane/metadata/android/en-US/images/phoneScreenshots/5.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fastlane_screenshot_6",
+      "label": "Phone Screenshot 6",
+      "file_type": "image",
+      "source_file": "fastlane/metadata/android/en-US/images/phoneScreenshots/6.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fastlane_screenshot_7",
+      "label": "Phone Screenshot 7",
+      "file_type": "image",
+      "source_file": "fastlane/metadata/android/en-US/images/phoneScreenshots/7.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "assets_gpay_black_logo",
+      "target": "assets_gpay_white_logo",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.99,
+      "source_file": "assets/gpay-black.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "assets_header_dark_hero",
+      "target": "assets_header_light_hero",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "assets/header-dark.jpg",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "assets_ic_launcher_logo",
+      "target": "assets_icon_white_transparent_logo",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.93,
+      "source_file": "assets/ic_launcher.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_title_blackhole",
+      "target": "fastlane_short_description_tagline",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "fastlane/metadata/android/en-US/title.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_short_description_tagline",
+      "target": "fastlane_full_description_features",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "fastlane/metadata/android/en-US/short_description.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_full_description_features",
+      "target": "assets_lyrics_feature_icon",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.86,
+      "source_file": "fastlane/metadata/android/en-US/full_description.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_full_description_features",
+      "target": "assets_song_feature_icon",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.82,
+      "source_file": "fastlane/metadata/android/en-US/full_description.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_full_description_features",
+      "target": "assets_youtube_cover_placeholder",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "fastlane/metadata/android/en-US/full_description.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_store_icon",
+      "target": "assets_ic_launcher_logo",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.88,
+      "source_file": "fastlane/metadata/android/en-US/images/icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_screenshot_1",
+      "target": "fastlane_screenshot_2",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "fastlane/metadata/android/en-US/images/phoneScreenshots/1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_screenshot_1",
+      "target": "fastlane_screenshot_3",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.89,
+      "source_file": "fastlane/metadata/android/en-US/images/phoneScreenshots/1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_screenshot_1",
+      "target": "fastlane_screenshot_4",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.89,
+      "source_file": "fastlane/metadata/android/en-US/images/phoneScreenshots/1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_screenshot_1",
+      "target": "fastlane_screenshot_5",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.89,
+      "source_file": "fastlane/metadata/android/en-US/images/phoneScreenshots/1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_screenshot_1",
+      "target": "fastlane_screenshot_6",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.89,
+      "source_file": "fastlane/metadata/android/en-US/images/phoneScreenshots/1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_screenshot_1",
+      "target": "fastlane_screenshot_7",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.89,
+      "source_file": "fastlane/metadata/android/en-US/images/phoneScreenshots/1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_full_description_features",
+      "target": "fastlane_screenshot_1",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.74,
+      "source_file": "fastlane/metadata/android/en-US/full_description.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_full_description_features",
+      "target": "fastlane_screenshot_2",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.74,
+      "source_file": "fastlane/metadata/android/en-US/full_description.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_full_description_features",
+      "target": "fastlane_screenshot_3",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.74,
+      "source_file": "fastlane/metadata/android/en-US/full_description.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_full_description_features",
+      "target": "fastlane_screenshot_4",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.74,
+      "source_file": "fastlane/metadata/android/en-US/full_description.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_full_description_features",
+      "target": "fastlane_screenshot_5",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.74,
+      "source_file": "fastlane/metadata/android/en-US/full_description.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_full_description_features",
+      "target": "fastlane_screenshot_6",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.74,
+      "source_file": "fastlane/metadata/android/en-US/full_description.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "fastlane_full_description_features",
+      "target": "fastlane_screenshot_7",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.74,
+      "source_file": "fastlane/metadata/android/en-US/full_description.txt",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "assets_gpay_black_logo",
+      "target": "fastlane_title_blackhole",
+      "relation": "conceptually_related_to",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.23,
+      "source_file": "assets/gpay-black.png",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "fastlane_listing_text_bundle",
+      "label": "Play Store Listing Text Bundle",
+      "nodes": [
+        "fastlane_title_blackhole",
+        "fastlane_short_description_tagline",
+        "fastlane_full_description_features"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "fastlane/metadata/android/en-US/title.txt"
+    },
+    {
+      "id": "fastlane_screenshot_gallery",
+      "label": "Play Store Screenshot Gallery",
+      "nodes": [
+        "fastlane_screenshot_1",
+        "fastlane_screenshot_2",
+        "fastlane_screenshot_3",
+        "fastlane_screenshot_4",
+        "fastlane_screenshot_5",
+        "fastlane_screenshot_6",
+        "fastlane_screenshot_7"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "fastlane/metadata/android/en-US/images/phoneScreenshots/1.png"
+    },
+    {
+      "id": "blackhole_branding_asset_pack",
+      "label": "BlackHole Branding Asset Pack",
+      "nodes": [
+        "assets_header_dark_hero",
+        "assets_header_light_hero",
+        "assets_ic_launcher_logo",
+        "assets_icon_white_transparent_logo",
+        "fastlane_store_icon"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "assets/ic_launcher.png"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
